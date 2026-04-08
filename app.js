@@ -34,7 +34,7 @@ app.post('/users', (req, res) => {
     users.push(newUser);
     writeData(users);
     res.status(201).json(newUser);
-})
+});
 
 app.get('/users', (req, res) => {
     const users = readData();
@@ -50,7 +50,26 @@ app.get('/users/:id', (req, res) => {
     }
     res.json(ids);
 });
+
+app.put('/users/:id', (req, res) => {
+    let users = readData();
+    let idx = users.findIndex(key => key.id == req.params.id);
+    if(idx === -1){
+        return res.status(404).send({error: "User not found"});
+    }
+    if(req.body.email){
+        const emailExist = users.find(key =>key.email === req.body.email && key.id != req.params.id);
+        if(emailExist){
+            return res.status(400).send({error: "Email already in use"});
+        }
+    }
+    users[idx] = { 
+        ...users[idx], ...req.body
+    };
+    writeData(users);
+    res.json(users[idx]);
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on port  http://localhost:${PORT}`);
 });
-
